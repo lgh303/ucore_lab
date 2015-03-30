@@ -220,11 +220,26 @@ debug: $(UCOREIMG)
 	$(V)$(QEMU) -S -s -parallel stdio -hda $< -serial null &
 	$(V)sleep 2
 	$(V)$(TERMINAL) -e "gdb -q -tui -x tools/gdbinit"
-	
+
 debug-nox: $(UCOREIMG)
 	$(V)$(QEMU) -S -s -serial mon:stdio -hda $< -nographic &
 	$(V)sleep 2
 	$(V)$(TERMINAL) -e "gdb -q -x tools/gdbinit"
+
+lab1-ex2-1-mon: $(UCOREIMG)
+	$(V)$(TERMINAL) -e "$(QEMU) -S -s -d in_asm -D $(BINDIR)/q.log -parallel stdio -hda $< -serial null"
+	$(V)sleep 2
+	$(V)$(TERMINAL) -e "gdb -q -x tools/lab1-ex2-1-init"
+
+lab1-ex2-2-mon: $(UCOREIMG)
+	$(V)$(TERMINAL) -e "$(QEMU) -S -s -d in_asm -D $(BINDIR)/q.log -monitor stdio -hda $< -serial null"
+	$(V)sleep 2
+	$(V)$(TERMINAL) -e "gdb -q -x tools/lab1-ex2-2-init"
+
+lab1-ex2-4-mon: $(UCOREIMG)
+	$(V)$(TERMINAL) -e "$(QEMU) -S -s -d in_asm -D $(BINDIR)/q.log -monitor stdio -hda $< -serail null"
+	$(V)sleep 2
+	$(V)$(TERMINAL) -e "gdb -q -x tools/lab1-ex2-4-init"
 
 .PHONY: grade touch
 

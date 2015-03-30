@@ -1,0 +1,4 @@
+file obj/bootblock.o
+target remote : 1234
+b bootmain.c : 89
+c
