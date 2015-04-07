@@ -175,6 +175,7 @@ trap_dispatch(struct trapframe *tf) {
     int ret;
 
     switch (tf->tf_trapno) {
+		 cprintf("Trap Number : %d\n", tf->tf_trapno);
     case T_PGFLT:  //page fault
         if ((ret = pgfault_handler(tf)) != 0) {
             print_trapframe(tf);
@@ -215,6 +216,7 @@ trap_dispatch(struct trapframe *tf) {
         /* do nothing */
         break;
     default:
+		 cprintf("Default Condition\n");
         // in kernel, it must be a mistake
         if ((tf->tf_cs & 3) == 0) {
             print_trapframe(tf);
