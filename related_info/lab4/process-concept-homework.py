@@ -83,9 +83,13 @@ class scheduler:
         #YOUR CODE
         curr_id = self.curr_proc
         next_id = (curr_id + 1) % len(self.proc_info)
-        self.proc_info[next_id][PROC_ID] = next_id
-        self.curr_proc = next_id
+        while next_id != curr_id:
+            if self.proc_info[next_id][PROC_STATE] == STATE_READY:
+                break
+            next_id = (next_id + 1) % len(self.proc_info)
         if self.proc_info[next_id][PROC_STATE] == STATE_READY:
+            self.curr_proc = next_id
+            self.proc_info[next_id][PROC_ID] = next_id
             self.proc_info[next_id][PROC_STATE] = STATE_RUNNING
         return
 
