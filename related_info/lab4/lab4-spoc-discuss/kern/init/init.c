@@ -32,7 +32,9 @@ kern_init(void) {
     clock_init();               // init clock interrupt
     intr_enable();              // enable irq interrupt
 
+    cprintf("~~~~first schedule begin~~~~\n");
 	schedule();   //let init proc run
+    cprintf("~~~~first schedule end~~~~\n");
 	while (do_wait(1, NULL) == 0) {
         schedule();
     }

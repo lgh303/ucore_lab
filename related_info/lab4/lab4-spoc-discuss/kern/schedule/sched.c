@@ -8,6 +8,7 @@ void
 wakeup_proc(struct proc_struct *proc) {
     assert(proc->state != PROC_ZOMBIE && proc->state != PROC_RUNNABLE);
     proc->state = PROC_RUNNABLE;
+    cprintf("\tThread %d ==> RUNNABLE(ready)\n", proc->pid);
 }
 
 void
@@ -27,7 +28,7 @@ schedule(void) {
                     break;
                 }
             }
-        } while (le != last);
+        } while (list_next(le) != last);
         if (next == NULL || next->state != PROC_RUNNABLE) {
             next = idleproc;
         }

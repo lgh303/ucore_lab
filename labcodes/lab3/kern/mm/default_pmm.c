@@ -147,7 +147,7 @@ default_free_pages(struct Page *base, size_t n) {
 
     list_entry_t *curr = &(base->page_link);
     list_entry_t *next = curr;
-    while ((next = list_next(next)) != &free_list)
+    if ((next = list_next(next)) != &free_list)
     {
         struct Page *nextp = le2page(next, page_link);
         if (base + base->property == nextp)
@@ -158,7 +158,7 @@ default_free_pages(struct Page *base, size_t n) {
         }
     }
     list_entry_t *prev = curr;
-    while ((prev = list_prev(prev)) != &free_list)
+    if ((prev = list_prev(prev)) != &free_list)
     {
         struct Page *prevp = le2page(prev, page_link);
         if (prevp + prevp->property == base)

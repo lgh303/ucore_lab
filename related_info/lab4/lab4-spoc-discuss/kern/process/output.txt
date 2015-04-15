@@ -1,0 +1,99 @@
+(THU.CST) os is loading ...
+
+Special kernel symbols:
+  entry  0xc010002a (phys)
+  etext  0xc01073d4 (phys)
+  edata  0xc011ca68 (phys)
+  end    0xc011d9d8 (phys)
+Kernel executable memory footprint: 119KB
+memory management: default_pmm_manager
+e820map:
+  memory: 0009fc00, [00000000, 0009fbff], type = 1.
+  memory: 00000400, [0009fc00, 0009ffff], type = 2.
+  memory: 00010000, [000f0000, 000fffff], type = 2.
+  memory: 07efe000, [00100000, 07ffdfff], type = 1.
+  memory: 00002000, [07ffe000, 07ffffff], type = 2.
+  memory: 00040000, [fffc0000, ffffffff], type = 2.
+default_init_memmap: nr free page is 32224
+check_alloc_page() succeeded!
+check_pgdir() succeeded!
+check_boot_pgdir() succeeded!
+-------------------- BEGIN --------------------
+PDE(0e0) c0000000-f8000000 38000000 urw
+  |-- PTE(38000) c0000000-f8000000 38000000 -rw
+PDE(001) fac00000-fb000000 00400000 -rw
+  |-- PTE(000e0) faf00000-fafe0000 000e0000 urw
+  |-- PTE(00001) fafeb000-fafec000 00001000 -rw
+--------------------- END ---------------------
+use SLOB allocator
+kmalloc_init() succeeded!
+	Thread -1 ==> INITIALIZED
+	Thread 1 ==> RUNNABLE(ready)
+	Thread 1 ==> RUNNABLE(ready)
+	Thread -1 ==> INITIALIZED
+	Thread 2 ==> RUNNABLE(ready)
+	Thread 2 ==> RUNNABLE(ready)
+	Thread -1 ==> INITIALIZED
+	Thread 3 ==> RUNNABLE(ready)
+	Thread 3 ==> RUNNABLE(ready)
+proc_init:: Created kernel thread init_main--> pid: 1, name: init1
+proc_init:: Created kernel thread init_main--> pid: 2, name: init2
+proc_init:: Created kernel thread init_main--> pid: 3, name: init3
+++ setup timer interrupts
+~~~~first schedule begin~~~~
+	SWITCH : Thread 0 --> Thread 1
+ kernel_thread, pid = 1, name = init1
+	SWITCH : Thread 1 --> Thread 2
+ kernel_thread, pid = 2, name = init2
+	SWITCH : Thread 2 --> Thread 3
+ kernel_thread, pid = 3, name = init3
+	SWITCH : Thread 3 --> Thread 1
+ kernel_thread, pid = 1, name = init1 , arg  init main1: Hello world!! 
+	SWITCH : Thread 1 --> Thread 2
+ kernel_thread, pid = 2, name = init2 , arg  init main2: Hello world!! 
+	SWITCH : Thread 2 --> Thread 3
+ kernel_thread, pid = 3, name = init3 , arg  init main3: long-long-life Tread!! 
+	SWITCH : Thread 3 --> Thread 1
+ kernel_thread, pid = 1, name = init1 ,  en.., Bye, Bye. :)
+ do_exit: proc pid 1 will exit
+ do_exit: proc  parent c02ff008
+	Thread 1 ==> ZOMBIE
+	SWITCH : Thread 1 --> Thread 2
+ kernel_thread, pid = 2, name = init2 ,  en.., Bye, Bye. :)
+ do_exit: proc pid 2 will exit
+ do_exit: proc  parent c02ff008
+	Thread 2 ==> ZOMBIE
+	SWITCH : Thread 2 --> Thread 3
+ kernel_thread, pid = 3, name = init3 , I am still alive :)
+	SWITCH : Thread 3 --> Thread 0
+~~~~first schedule end~~~~
+do_wait: begin
+	FOUND : Thread 1 is zombie
+do_wait: has kid find child  pid1
+	Thread 1 ==> DONE
+	SWITCH : Thread 0 --> Thread 3
+ kernel_thread, pid = 3, name = init3 , I am still alive, en.... 
+	SWITCH : Thread 3 --> Thread 0
+do_wait: begin
+	FOUND : Thread 2 is zombie
+do_wait: has kid find child  pid2
+	Thread 2 ==> DONE
+	SWITCH : Thread 0 --> Thread 3
+ kernel_thread, pid = 3, name = init3 , I am still alive, en........ 
+	SWITCH : Thread 3 --> Thread 0
+do_wait: begin
+do_wait: has kid begin
+	Thread 0 ==> SLEEP
+	SWITCH : Thread 0 --> Thread 3
+ kernel_thread, pid = 3, name = init3 , I am done, Bye, Bye. :) 
+ do_exit: proc pid 3 will exit
+ do_exit: proc  parent c02ff008
+	Thread 3 ==> ZOMBIE
+	Thread 0 ==> RUNNABLE(ready)
+	SWITCH : Thread 3 --> Thread 0
+do_wait: begin
+	FOUND : Thread 3 is zombie
+do_wait: has kid find child  pid3
+	Thread 3 ==> DONE
+do_wait: begin
+100 ticks
