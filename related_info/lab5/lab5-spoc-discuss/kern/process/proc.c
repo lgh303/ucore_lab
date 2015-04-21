@@ -211,6 +211,7 @@ proc_run(struct proc_struct *proc) {
             current = proc;
             load_esp0(next->kstack + KSTACKSIZE);
             lcr3(next->cr3);
+            cprintf("\tSWITCH : Thread %d --> Thread %d\n", prev->pid, next->pid);
             switch_to(&(prev->context), &(next->context));
         }
         local_intr_restore(intr_flag);
@@ -406,6 +407,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     if ((proc = alloc_proc()) == NULL) {
         goto fork_out;
     }
+    cprintf("\tThread %d ==> INITIALIZED\n", proc->pid);
 
     proc->parent = current;
     assert(current->wait_state == 0);
@@ -429,6 +431,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     local_intr_restore(intr_flag);
 
     wakeup_proc(proc);
+    cprintf("\tThread %d ==> RUNNABLE(ready)\n", proc->pid);
 
     ret = proc->pid;
 fork_out:
@@ -466,6 +469,7 @@ do_exit(int error_code) {
     }
     current->state = PROC_ZOMBIE;
     current->exit_code = error_code;
+    cprintf("\tThread %d ==> ZOMBIE\n", current->pid);
     
     bool intr_flag;
     struct proc_struct *proc;
@@ -613,6 +617,7 @@ load_icode(unsigned char *binary, size_t size) {
     
     //(5) set current process's mm, sr3, and set CR3 reg = physical addr of Page Directory
     mm_count_inc(mm);
+    cprintf("\tProcess %d : Switch Context From Kernel to User\n", current->pid);
     current->mm = mm;
     current->cr3 = PADDR(mm->pgdir);
     lcr3(PADDR(mm->pgdir));
@@ -629,6 +634,7 @@ load_icode(unsigned char *binary, size_t size) {
      *          tf_eip should be the entry point of this binary program (elf->e_entry)
      *          tf_eflags should be set to enable computer to produce Interrupt
      */
+    cprintf("\tProcess %d : Switch Stack From Kernel to User\n", current->pid);
     tf->tf_cs = USER_CS;
     tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
     tf->tf_esp = USTACKTOP;
@@ -712,6 +718,7 @@ repeat:
         if (proc != NULL && proc->parent == current) {
             haskid = 1;
             if (proc->state == PROC_ZOMBIE) {
+                cprintf("\tFOUND : Thread %d is zombie\n", proc->pid);
                 goto found;
             }
         }
@@ -726,8 +733,10 @@ repeat:
         }
     }
     if (haskid) {
+		cprintf("do_wait: has kid begin\n");
         current->state = PROC_SLEEPING;
         current->wait_state = WT_CHILD;
+        cprintf("\tThread %d ==> SLEEP\n", current->pid);
         schedule();
         if (current->flags & PF_EXITING) {
             do_exit(-E_KILLED);
@@ -749,6 +758,7 @@ found:
         remove_links(proc);
     }
     local_intr_restore(intr_flag);
+    cprintf("\tThread %d ==> DONE\n", proc->pid);
     put_kstack(proc);
     kfree(proc);
     return 0;
@@ -808,6 +818,7 @@ static int
 user_main(void *arg) {
 #ifdef TEST
     KERNEL_EXECVE2(TEST, TESTSTART, TESTSIZE);
+    KERNEL_EXECVE2(TEST, TESTSTART, TESTSIZE);
 #else
     KERNEL_EXECVE(exit);
 #endif
@@ -821,6 +832,7 @@ init_main(void *arg) {
     size_t kernel_allocated_store = kallocated();
 
     int pid = kernel_thread(user_main, NULL, 0);
+    pid = kernel_thread(user_main, NULL, 0);
     if (pid <= 0) {
         panic("create user_main failed.\n");
     }
