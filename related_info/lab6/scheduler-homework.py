@@ -54,14 +54,18 @@ print '\n'
 
 if options.solve == True:
     print '** Solutions **\n'
-    if options.policy == 'SJF':
+    if options.policy == 'FIFO' or options.policy == 'SJF':
+        if options.policy == 'SJF':
 		#YOUR CODE
-    	pass
-    	
-    if options.policy == 'FIFO':
+            joblist.sort(lambda x, y : cmp(x[1], y[1]))
         thetime = 0
         print 'Execution trace:'
-		#YOUR CODE
+            #YOUR CODE
+        for tmp in joblist:
+            jobnum = tmp[0]
+            ranfor = tmp[1]
+            print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (thetime, jobnum, ranfor, thetime + ranfor)
+            thetime += ranfor
          
         print '\nFinal statistics:'
         t     = 0.0
@@ -112,9 +116,10 @@ if options.solve == True:
                 response[jobnum] = thetime
             currwait = thetime - lastran[jobnum]
             wait[jobnum] += currwait
-            ranfor = 0
+            ranfor = 1.0
             if runtime > quantum:
 				#YOUR CODE
+                runtime = runtime - ranfor
                 print '  [ time %3d ] Run job %3d for %.2f secs' % (thetime, jobnum, ranfor)
                 runlist.append([jobnum, runtime])
             else:
