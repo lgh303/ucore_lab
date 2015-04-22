@@ -29,6 +29,7 @@ sys_wait(uint32_t arg[]) {
 static int
 sys_exec(uint32_t arg[]) {
     const char *name = (const char *)arg[0];
+    cprintf("------------------------------------------------\n");
     size_t len = (size_t)arg[1];
     unsigned char *binary = (unsigned char *)arg[2];
     size_t size = (size_t)arg[3];
