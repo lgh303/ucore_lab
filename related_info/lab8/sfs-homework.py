@@ -211,6 +211,9 @@ class fs:
         for i in range(self.numData):
             print self.data[i].dump(),
         print ''
+        print self.files
+        print self.dirs
+        print self.nameToInum
 
     def makeName(self):
         p = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
@@ -244,6 +247,23 @@ class fs:
             print 'unlink("%s");' % tfile
 
         inum = self.nameToInum[tfile]
+        assert(self.inodes[inum].getType() == 'f')
+
+        dnum = self.inodes[inum].getAddr()
+        if self.inodes[inum].getRefCnt() == 1:
+            self.inodes[inum].free()
+            self.data[dnum].free()
+        else:
+            self.inodes[inum].decRefCnt()
+
+        
+        pname = self.getParent(tfile)
+        pinum = self.nameToInum[pname]
+        pdnum = self.inodes[pinum].getAddr()
+        self.inodes[pinum].decRefCnt()
+        self.data[pdnum].delDirEntry(tfile)
+        self.files.remove(tfile)
+        self.nameToInum.pop(tfile)
 
     # YOUR CODE, YOUR ID
         # IF inode.refcnt ==1, THEN free data blocks first, then free inode, ELSE dec indoe.refcnt
@@ -251,10 +271,10 @@ class fs:
     # DONE
 
         # finally, remove from files list
-        self.files.remove(tfile)
         return 0
 
     def createLink(self, target, newfile, parent):
+
     # YOUR CODE, YOUR ID
         # find info about parent
         # is there room in the parent directory?
@@ -263,6 +283,16 @@ class fs:
         # inc parent ref count
         # now add to directory
     # DONE
+	pinum = self.nameToInum[parent]
+        pdatanum = self.inodes[pinum].getAddr()
+	if self.data[pdatanum].getFreeEntries():
+            tinum = self.nameToInum[target]
+            if tinum < len(self.inodes) and tinum >= 0:
+                self.inodes[pinum].incRefCnt()
+                self.inodes[tinum].incRefCnt()
+                pdata = self.inodes[pinum].getAddr()
+                self.data[pdata].addDirEntry(newfile,tinum)
+			
         return tinum
 
     def createFile(self, parent, newfile, ftype):
@@ -276,19 +306,59 @@ class fs:
         # inc parent ref count
         # and add to directory of parent
     # DONE
+        print 'createFile(',
+        print parent,
+        print ', ' + newfile + ', ' + ftype + ')'
+        pinum = self.nameToInum[parent]
+        pdatanum = self.inodes[pinum].getAddr()
+        free_count = self.data[pdatanum].getFreeEntries()
+        if free_count <= 0:
+            return -1
+        if newfile in self.files:
+            return -1
+        inum = self.inodeAlloc()
+        if inum == -1:
+            return -1
+        if ftype == 'f':
+            self.inodes[inum].setAll(ftype, -1, 1)
+            currfile = parent + '/' + newfile
+ #           self.nameToInum[currfile] = inum
+        else:
+            datanum = self.dataAlloc()
+            if datanum == -1:
+                return -1
+            self.inodes[inum].setAll(ftype, datanum, 2)
+            self.data[datanum].setType('d')
+            if parent == '/':
+                currdir = parent + newfile
+            else:
+                currdir = parent + '/' + newfile
+            self.data[datanum].addDirEntry('.', inum)
+            self.data[datanum].addDirEntry('..', pinum)
+#            self.nameToInum[currdir] = inum
+        self.data[pdatanum].addDirEntry(newfile, inum)
+        self.inodes[pinum].incRefCnt()
         return inum
 
     def writeFile(self, tfile, data):
+        print 'writefile(' + tfile + ', ' + data + ')'
         inum = self.nameToInum[tfile]
         curSize = self.inodes[inum].getSize()
         dprint('writeFile: inum:%d cursize:%d refcnt:%d' % (inum, curSize, self.inodes[inum].getRefCnt()))
+
+        if curSize == 0:
+            alloc_addr = self.dataAlloc()
+            self.inodes[inum].setAddr(alloc_addr)
+            self.data[alloc_addr].setType('f')
+            self.data[alloc_addr].addData(data)
+        else :
+            print('file is full !!!!!')
 
     # YOUR CODE, YOUR ID
         # file is full?
         # no data blocks left
         # write file data
     # DONE
-
         if printOps:
             print 'fd=open("%s", O_WRONLY|O_APPEND); write(fd, buf, BLOCKSIZE); close(fd);' % tfile
         return 0
