@@ -113,7 +113,7 @@ void phi_test_condvar (i) {
         cprintf("phi_test_condvar: state_condvar[%d] will eating\n",i);
         state_condvar[i] = EATING ;
         cprintf("phi_test_condvar: signal self_cv[%d] \n",i);
-        cond_signal(&mtp->cv[i]) ;
+        cond_signal(&mtp->cv[i]) ; // 吃到了，将睡在第i个条件变量上的进程（哲学家i）唤醒
     }
 }
 
@@ -124,6 +124,11 @@ void phi_take_forks_condvar(int i) {
      // LAB7 EXERCISE1: YOUR CODE
      // I am hungry
      // try to get fork
+     state_condvar[i] = HUNGRY;
+     phi_test_condvar(i);
+     while (state_condvar[i] != EATING)
+         cond_wait(&mtp->cv[i]); // 没有吃到的话，就要阻塞在自己的条件变量上
+
 //--------leave routine in monitor--------------
       if(mtp->next_count>0)
          up(&(mtp->next));
@@ -138,6 +143,10 @@ void phi_put_forks_condvar(int i) {
      // LAB7 EXERCISE1: YOUR CODE
      // I ate over
      // test left and right neighbors
+     state_condvar[i] = THINKING;
+     phi_test_condvar(LEFT); //自己吃饱了，试着唤醒旁边的进程
+     phi_test_condvar(RIGHT);
+     
 //--------leave routine in monitor--------------
      if(mtp->next_count>0)
         up(&(mtp->next));

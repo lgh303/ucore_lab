@@ -242,7 +242,8 @@ trap_dispatch(struct trapframe *tf) {
 	     * run_timer_list
          */
         ticks++;
-        sched_class_proc_tick(current);
+//        sched_class_proc_tick(current);
+        run_timer_list(); //其中调用了sched_class_proc_tick
         if (ticks % TICK_NUM == 0)
             print_ticks();
         break;

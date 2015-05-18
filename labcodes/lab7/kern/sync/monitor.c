@@ -37,6 +37,15 @@ cond_signal (condvar_t *cvp) {
    *          }
    *       }
    */
+   monitor_t *owner = cvp->owner;
+   if (cvp->count > 0) // 如果有进程睡在这个条件变量（内部的信号量）上
+   {
+       owner->next_count++; // 当前进程自身要睡在管程monitor中的next信号量上，将睡在next上的进程计数加1
+       up(&(cvp->sem)); // 唤醒睡在这个条件变量（内部的信号量）上的进程
+       down(&(owner->next)); // 自身睡在管程monitor中的next信号量上
+       owner->next_count--; // 睡醒之后， 恢复next上的进程计数
+   }
+
    cprintf("cond_signal end: cvp %x, cvp->count %d, cvp->owner->next_count %d\n", cvp, cvp->count, cvp->owner->next_count);
 }
 
@@ -55,5 +64,14 @@ cond_wait (condvar_t *cvp) {
     *         wait(cv.sem);
     *         cv.count --;
     */
+    cvp->count++; // 睡在这个条件变量上的进程数增加
+    monitor_t *owner = cvp->owner;
+    if (owner->next_count > 0) // 这个进程是由另外一些进程执行cond_signal函数而唤醒的
+        up(&(owner->next)); // 这些函数正睡在owner->next的信号量上, 现在要将他们唤醒
+    else
+        up(&(owner->mutex)); // 需要唤醒由于互斥条件而无法进入管程的进程，这些进程都睡在owner->mutex的信号量上
+    down(&(cvp->sem)); // 自己要睡在这个条件变量（内部的信号量）cvp->sem上
+    cvp->count--; // 醒了之后睡在这个条件变量（内部的信号量）上的进程数恢复
+
     cprintf("cond_wait end:  cvp %x, cvp->count %d, cvp->owner->next_count %d\n", cvp, cvp->count, cvp->owner->next_count);
 }
