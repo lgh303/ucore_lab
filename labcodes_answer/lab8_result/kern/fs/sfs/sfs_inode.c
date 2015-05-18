@@ -199,6 +199,7 @@ failed_unlock:
  */
 static int
 sfs_bmap_get_sub_nolock(struct sfs_fs *sfs, uint32_t *entp, uint32_t index, bool create, uint32_t *ino_store) {
+    cprintf("9. sfs_bmap_get_sub_nolock\n");
     assert(index < SFS_BLK_NENTRY);
     int ret;
     uint32_t ent, ino = 0;
@@ -255,6 +256,7 @@ failed_cleanup:
  */
 static int
 sfs_bmap_get_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, uint32_t index, bool create, uint32_t *ino_store) {
+    cprintf("8. sfs_bmap_get_nolock\n");
     struct sfs_disk_inode *din = sin->din;
     int ret;
     uint32_t ent, ino;
@@ -352,6 +354,7 @@ sfs_bmap_free_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, uint32_t index) 
  */
 static int
 sfs_bmap_load_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, uint32_t index, uint32_t *ino_store) {
+    cprintf("7. sfs_bmap_load_nolock\n");
     struct sfs_disk_inode *din = sin->din;
     assert(index <= din->blocks);
     int ret;
@@ -551,6 +554,7 @@ sfs_close(struct inode *node) {
  */
 static int
 sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset, size_t *alenp, bool write) {
+    cprintf("6. ==> sfs_io_nolock(write == false)\n");
     struct sfs_disk_inode *din = sin->din;
     assert(din->type != SFS_TYPE_DIR);
     off_t endpos = offset + *alenp, blkoff;
@@ -615,6 +619,7 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
     }
 
     size = SFS_BLKSIZE;
+    int oooout = 0;
     while (nblks != 0) {
         if ((ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) != 0) {
             goto out;
@@ -623,6 +628,11 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
             goto out;
         }
         alen += size, buf += size, blkno ++, nblks --;
+        if (oooout == 0)
+        {
+            cprintf("Reading... Size = %d\n", alen);
+            oooout = 1;
+        }
     }
 
     if ((size = endpos % SFS_BLKSIZE) != 0) {
@@ -649,6 +659,7 @@ out:
  */
 static inline int
 sfs_io(struct inode *node, struct iobuf *iob, bool write) {
+    cprintf("5. ==> sfs_io(write == false)\n");
     struct sfs_fs *sfs = fsop_info(vop_fs(node), sfs);
     struct sfs_inode *sin = vop_info(node, sfs_inode);
     int ret;
@@ -667,6 +678,7 @@ sfs_io(struct inode *node, struct iobuf *iob, bool write) {
 // sfs_read - read file
 static int
 sfs_read(struct inode *node, struct iobuf *iob) {
+    cprintf("4. ==> vop_read as sfs_read\n");
     return sfs_io(node, iob, 0);
 }
 

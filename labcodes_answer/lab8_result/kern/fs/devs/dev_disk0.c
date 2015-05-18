@@ -39,6 +39,7 @@ disk0_close(struct device *dev) {
 
 static void
 disk0_read_blks_nolock(uint32_t blkno, uint32_t nblks) {
+    cprintf("13. disk0_read_blks_nolock\n");
     int ret;
     uint32_t sectno = blkno * DISK0_BLK_NSECT, nsecs = nblks * DISK0_BLK_NSECT;
     if ((ret = ide_read_secs(DISK0_DEV_NO, sectno, disk0_buffer, nsecs)) != 0) {
@@ -59,6 +60,7 @@ disk0_write_blks_nolock(uint32_t blkno, uint32_t nblks) {
 
 static int
 disk0_io(struct device *dev, struct iobuf *iob, bool write) {
+    cprintf("12. dop_io == dev->d_io == disk0_io\n");
     off_t offset = iob->io_offset;
     size_t resid = iob->io_resid;
     uint32_t blkno = offset / DISK0_BLKSIZE;

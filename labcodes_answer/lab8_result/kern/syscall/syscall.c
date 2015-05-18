@@ -101,6 +101,7 @@ sys_close(uint32_t arg[]) {
 
 static int
 sys_read(uint32_t arg[]) {
+    cprintf("1. ==> sys_read\n");
     int fd = (int)arg[0];
     void *base = (void *)arg[1];
     size_t len = (size_t)arg[2];

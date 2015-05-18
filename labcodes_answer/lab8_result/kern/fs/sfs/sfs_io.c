@@ -18,6 +18,7 @@
  */
 static int
 sfs_rwblock_nolock(struct sfs_fs *sfs, void *buf, uint32_t blkno, bool write, bool check) {
+    cprintf("11. sfs_rwblock_nolock\n");
     assert((blkno != 0 || !check) && blkno < sfs->super.blocks);
     struct iobuf __iob, *iob = iobuf_init(&__iob, buf, SFS_BLKSIZE, blkno * SFS_BLKSIZE);
     return dop_io(sfs->dev, iob, write);
@@ -82,6 +83,7 @@ sfs_wblock(struct sfs_fs *sfs, void *buf, uint32_t blkno, uint32_t nblks) {
  */
 int
 sfs_rbuf(struct sfs_fs *sfs, void *buf, size_t len, uint32_t blkno, off_t offset) {
+    cprintf("10. sfs_rbuf\n");
     assert(offset >= 0 && offset < SFS_BLKSIZE && offset + len <= SFS_BLKSIZE);
     int ret;
     lock_sfs_io(sfs);

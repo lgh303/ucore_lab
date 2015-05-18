@@ -211,6 +211,7 @@ file_close(int fd) {
 // read file
 int
 file_read(int fd, void *base, size_t len, size_t *copied_store) {
+    cprintf("3. ==> file_read\n");
     int ret;
     struct file *file;
     *copied_store = 0;

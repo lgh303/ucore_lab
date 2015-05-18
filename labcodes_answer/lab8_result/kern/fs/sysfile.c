@@ -59,6 +59,7 @@ sysfile_close(int fd) {
 /* sysfile_read - read file */
 int
 sysfile_read(int fd, void *base, size_t len) {
+    cprintf("2. ==> sysfile_read\n");
     struct mm_struct *mm = current->mm;
     if (len == 0) {
         return 0;
