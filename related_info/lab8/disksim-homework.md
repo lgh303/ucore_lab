@@ -1,4 +1,4 @@
-# 磁盘访问 练习
+h# 磁盘访问 练习
 
 ## 磁盘抽象模型
 
@@ -62,11 +62,11 @@ TOTALS      Seek: 40  Rotate:275  Transfer: 60  Total: 375
 ## 问题 1：请执行 FIFO磁盘调度策略
 
 ```
-./disksim.py  采用FIFO -a 0
-./disksim.py   -a 6
-./disksim.py   -a 30
-./disksim.py   -a 7,30,8
-./disksim.py   -a 10,11,12,13，24,1
+./disksim.py  采用FIFO -a 0    ==> 0 + 165 + 30 = 195
+./disksim.py   -a 6           ==> 0 + 345 + 30 = 375
+./disksim.py   -a 30          ==> 345 + 30 = 375
+./disksim.py   -a 7,30,8      ==> 2 * 360 + 75 = 795
+./disksim.py   -a 10,11,12,13，24,1 ==> 3.5 * 360 + 45 = 130
 ```
 请回答每个磁盘请求序列的IO访问时间
 

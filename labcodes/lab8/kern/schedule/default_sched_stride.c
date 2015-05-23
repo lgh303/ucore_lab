@@ -8,7 +8,7 @@
 
 /* You should define the BigStride constant here*/
 /* LAB6: YOUR CODE */
-#define BIG_STRIDE    /* you should give a value, and is ??? */
+#define BIG_STRIDE 0x7fffffff   /* you should give a value, and is ??? */
 
 /* The compare function for two skew_heap_node_t's and the
  * corresponding procs*/
@@ -41,6 +41,9 @@ stride_init(struct run_queue *rq) {
       * (2) init the run pool: rq->lab6_run_pool
       * (3) set number of process: rq->proc_num to 0       
       */
+    list_init(&(rq->run_list));
+    rq->lab6_run_pool = NULL;
+    rq->proc_num = 0;
 }
 
 /*
@@ -67,6 +70,11 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
+    rq->lab6_run_pool = skew_heap_insert(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
+    if (proc->time_slice == 0 || proc->time_slice > rq->max_time_slice)
+        proc->time_slice = rq->max_time_slice;
+    proc->rq = rq;
+    rq->proc_num++;
 }
 
 /*
@@ -85,6 +93,8 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
+    rq->lab6_run_pool = skew_heap_remove(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
+    --rq->proc_num;
 }
 /*
  * stride_pick_next pick the element from the ``run-queue'', with the
@@ -108,6 +118,14 @@ stride_pick_next(struct run_queue *rq) {
       * (2) update p;s stride value: p->lab6_stride
       * (3) return p
       */
+    if (rq->lab6_run_pool == NULL) return NULL;
+    struct proc_struct *proc = le2proc(rq->lab6_run_pool, lab6_run_pool);
+    if (!proc) return NULL;
+    if (proc->lab6_priority == 0)
+        proc->lab6_stride += BIG_STRIDE;
+    else
+        proc->lab6_stride += BIG_STRIDE / proc->lab6_priority;
+    return proc;
 }
 
 /*
@@ -121,6 +139,10 @@ stride_pick_next(struct run_queue *rq) {
 static void
 stride_proc_tick(struct run_queue *rq, struct proc_struct *proc) {
      /* LAB6: YOUR CODE */
+    if (proc->time_slice > 0)
+        --proc->time_slice;
+    if (proc->time_slice == 0)
+        proc->need_resched = 1;
 }
 
 struct sched_class default_sched_class = {
